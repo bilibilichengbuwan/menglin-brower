@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>贪吃蛇</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { width: 100%; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif; }
+body {
+    background: linear-gradient(180deg, #E8F1FF 0%, #F2F2F7 100%);
+    color: #1C1C1E;
+    min-height: 100vh;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+@media (prefers-color-scheme: dark) {
+    body { background: linear-gradient(180deg, #0A1A2F 0%, #1A1A1A 100%); color: #FFFFFF; }
+    .card { background: rgba(45,45,45,0.85) !important; border-color: #3A3A3A !important; }
+    .score-label { color: rgba(255,255,255,0.7) !important; }
+    canvas { background: #1A1A1A !important; border-color: #3A3A3A !important; }
+    .btn-dir { background: rgba(58,58,58,0.85) !important; color: #FFFFFF !important; }
+}
+body.dark-applied { background: linear-gradient(180deg, #0A1A2F 0%, #1A1A1A 100%) !important; color: #FFFFFF !important; }
+body.dark-applied .card { background: rgba(45,45,45,0.85) !important; border-color: #3A3A3A !important; }
+body.dark-applied .score-label { color: rgba(255,255,255,0.7) !important; }
+body.dark-applied canvas { background: #1A1A1A !important; border-color: #3A3A3A !important; }
+body.dark-applied .btn-dir { background: rgba(58,58,58,0.85) !important; color: #FFFFFF !important; }
+body.light-applied { background: linear-gradient(180deg, #E8F1FF 0%, #F2F2F7 100%) !important; color: #1C1C1E !important; }
+
+.card {
+    width: 100%;
+    max-width: 360px;
+    background: rgba(255,255,255,0.85);
+    border: 1px solid rgba(229,229,234,0.6);
+    border-radius: 22px;
+    padding: 20px 18px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    margin-bottom: 14px;
+}
+.score-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.score-label { font-size: 14px; color: #8E8E93; font-weight: 500; }
+.score-val { font-size: 22px; font-weight: 700; color: #1E88E5; font-variant-numeric: tabular-nums; }
+.canvas-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 4px;
+    position: relative;
+}
+canvas {
+    background: #F2F2F7;
+    border: 1px solid #E5E5EA;
+    border-radius: 14px;
+    display: block;
+    max-width: 100%;
+}
+.overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.4);
+    border-radius: 14px;
+    color: #FFFFFF;
+}
+.overlay.show { display: flex; }
+.overlay-title { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+.overlay-sub { font-size: 13px; opacity: 0.85; margin-bottom: 16px; }
+.btn-restart {
+    height: 40px;
+    padding: 0 22px;
+    border-radius: 20px;
+    border: none;
+    background: #1E88E5;
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn-restart:active { transform: scale(0.96); }
+
+.dpad {
+    width: 100%;
+    max-width: 360px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 8px;
+    aspect-ratio: 3 / 2;
+}
+.btn-dir {
+    background: rgba(255,255,255,0.85);
+    border: 1px solid rgba(229,229,234,0.6);
+    border-radius: 18px;
+    color: #1C1C1E;
+    font-size: 22px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+.btn-dir:active { background: #1E88E5; color: #FFFFFF; transform: scale(0.95); }
+.btn-up { grid-column: 2; grid-row: 1; }
+.btn-left { grid-column: 1; grid-row: 2; }
+.btn-right { grid-column: 3; grid-row: 2; }
+.btn-down { grid-column: 2; grid-row: 3; }
+</style>
+</head>
+<body>
+<div class="card">
+    <div class="score-row">
+        <span class="score-label">得分</span>
+        <span class="score-val" id="score">0</span>
+    </div>
+    <div class="canvas-wrap">
+        <canvas id="game" width="320" height="320"></canvas>
+        <div class="overlay" id="overlay">
+            <div class="overlay-title">游戏结束</div>
+            <div class="overlay-sub" id="finalScore">得分 0</div>
+            <button class="btn-restart" id="restartBtn">重新开始</button>
+        </div>
+    </div>
+</div>
+<div class="dpad">
+    <button class="btn-dir btn-up" data-dir="up">↑</button>
+    <button class="btn-dir btn-left" data-dir="left">←</button>
+    <button class="btn-dir btn-right" data-dir="right">→</button>
+    <button class="btn-dir btn-down" data-dir="down">↓</button>
+</div>
+<script>
+(function(){
+    if (typeof window.__YULAN_DARK__ !== 'undefined') {
+        if (window.__YULAN_DARK__ === true) document.body.classList.add('dark-applied');
+        else document.body.classList.add('light-applied');
+    }
+
+    var canvas = document.getElementById('game');
+    var ctx = canvas.getContext('2d');
+    var scoreEl = document.getElementById('score');
+    var overlay = document.getElementById('overlay');
+    var finalScoreEl = document.getElementById('finalScore');
+    var restartBtn = document.getElementById('restartBtn');
+
+    var GRID = 16;
+    var SIZE = canvas.width / GRID;
+    var snake, dir, nextDir, food, score, running, tickMs, timer;
+
+    function isDark() {
+        return document.body.classList.contains('dark-applied') ||
+               (matchMedia && matchMedia('(prefers-color-scheme: dark)').matches && !document.body.classList.contains('light-applied'));
+    }
+
+    function reset() {
+        snake = [{x:8,y:8},{x:7,y:8},{x:6,y:8}];
+        dir = {x:1,y:0};
+        nextDir = dir;
+        score = 0;
+        tickMs = 140;
+        placeFood();
+        scoreEl.textContent = '0';
+        overlay.classList.remove('show');
+        running = true;
+        clearTimeout(timer);
+        tick();
+    }
+
+    function placeFood() {
+        while (true) {
+            var f = {x: Math.floor(Math.random()*GRID), y: Math.floor(Math.random()*GRID)};
+            var ok = true;
+            for (var i=0;i<snake.length;i++) if (snake[i].x===f.x && snake[i].y===f.y) { ok=false; break; }
+            if (ok) { food = f; return; }
+        }
+    }
+
+    function draw() {
+        var dark = isDark();
+        var bg = dark ? '#1A1A1A' : '#F2F2F7';
+        var snakeHead = '#1E88E5';
+        var snakeBody = dark ? '#42A5F5' : '#64B5F6';
+        var foodColor = '#EF5350';
+
+        ctx.fillStyle = bg;
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+
+        ctx.fillStyle = foodColor;
+        var r = SIZE*0.38;
+        ctx.beginPath();
+        ctx.arc(food.x*SIZE + SIZE/2, food.y*SIZE + SIZE/2, r, 0, Math.PI*2);
+        ctx.fill();
+
+        for (var i=0;i<snake.length;i++) {
+            ctx.fillStyle = i===0 ? snakeHead : snakeBody;
+            var pad = 1.5;
+            ctx.beginPath();
+            var rad = 5;
+            var x = snake[i].x*SIZE+pad;
+            var y = snake[i].y*SIZE+pad;
+            var w = SIZE-pad*2;
+            var h = SIZE-pad*2;
+            ctx.moveTo(x+rad, y);
+            ctx.arcTo(x+w, y, x+w, y+h, rad);
+            ctx.arcTo(x+w, y+h, x, y+h, rad);
+            ctx.arcTo(x, y+h, x, y, rad);
+            ctx.arcTo(x, y, x+w, y, rad);
+            ctx.closePath();
+            ctx.fill();
+        }
+    }
+
+    function tick() {
+        if (!running) return;
+        dir = nextDir;
+        var head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+        if (head.x<0 || head.x>=GRID || head.y<0 || head.y>=GRID) return gameOver();
+        for (var i=0;i<snake.length;i++) if (snake[i].x===head.x && snake[i].y===head.y) return gameOver();
+        snake.unshift(head);
+        if (head.x===food.x && head.y===food.y) {
+            score += 1;
+            scoreEl.textContent = score;
+            placeFood();
+            if (tickMs > 70) tickMs -= 2;
+        } else {
+            snake.pop();
+        }
+        draw();
+        timer = setTimeout(tick, tickMs);
+    }
+
+    function gameOver() {
+        running = false;
+        finalScoreEl.textContent = '得分 ' + score;
+        overlay.classList.add('show');
+    }
+
+    function setDir(d) {
+        var map = {up:{x:0,y:-1}, down:{x:0,y:1}, left:{x:-1,y:0}, right:{x:1,y:0}};
+        var nd = map[d];
+        if (!nd) return;
+        if (nd.x === -dir.x && nd.y === -dir.y) return;
+        nextDir = nd;
+    }
+
+    document.querySelectorAll('.btn-dir').forEach(function(b){
+        b.addEventListener('click', function(){ setDir(b.dataset.dir); });
+    });
+    document.addEventListener('keydown', function(e){
+        var m = {ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};
+        var d = m[e.key];
+        if (d) { e.preventDefault(); setDir(d); }
+    });
+    restartBtn.addEventListener('click', reset);
+
+    reset();
+})();
+</script>
+</body>
+</html>

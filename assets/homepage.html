@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>梦林浏览器</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { width: 100%; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif; }
+
+body {
+    background: #FFFFFF;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: #1C1C1E;
+    min-height: 100vh;
+    padding: 24px 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+    body { background: linear-gradient(180deg, #0A1A2F 0%, #1A1A1A 100%); color: #FFFFFF; }
+    .time { color: #FFFFFF !important; text-shadow: 0 2px 12px rgba(0,0,0,0.45) !important; }
+    .date { color: rgba(255,255,255,0.8) !important; }
+    .search-box { background: rgba(45,45,45,0.85) !important; color: #FFFFFF !important; border-color: #3A3A3A !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .search-box::placeholder { color: #8E8E93 !important; }
+    .shortcut { background: rgba(45,45,45,0.8) !important; color: #FFFFFF !important; border-color: #3A3A3A !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .shortcut-name { color: #FFFFFF !important; }
+    .add-btn { background: rgba(45,45,45,0.8) !important; color: #007AFF !important; border-color: #3A3A3A !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .add-icon { background: #3A3A3A !important; color: #007AFF !important; }
+    .bg-btn { color: rgba(255,255,255,0.85) !important; }
+}
+
+/* 强制深色模式 */
+body.dark-applied:not(.has-user-bg) { background: linear-gradient(180deg, #0A1A2F 0%, #1A1A1A 100%) !important; color: #FFFFFF !important; }
+body.dark-applied.has-user-bg { background-color: #FFFFFF !important; color: #FFFFFF !important; }
+body.dark-applied .time { color: #FFFFFF !important; text-shadow: 0 2px 12px rgba(0,0,0,0.45) !important; }
+body.dark-applied .date { color: rgba(255,255,255,0.8) !important; }
+body.dark-applied .search-box { background: rgba(45,45,45,0.85) !important; color: #FFFFFF !important; border-color: #3A3A3A !important; }
+body.dark-applied .search-box::placeholder { color: #8E8E93 !important; }
+body.dark-applied .shortcut { background: rgba(45,45,45,0.8) !important; color: #FFFFFF !important; border-color: #3A3A3A !important; }
+body.dark-applied .shortcut-name { color: #FFFFFF !important; }
+body.dark-applied .add-btn { background: rgba(45,45,45,0.8) !important; color: #007AFF !important; border-color: #3A3A3A !important; }
+body.dark-applied .add-icon { background: #3A3A3A !important; color: #007AFF !important; }
+body.dark-applied .modal-content { background: #2D2D2D !important; }
+body.dark-applied .modal-title { color: #FFFFFF !important; }
+body.dark-applied .modal-input { background: #3A3A3A !important; color: #FFFFFF !important; border-color: #4A4A4A !important; }
+body.dark-applied .bg-btn { color: rgba(255,255,255,0.85) !important; }
+
+/* 强制浅色模式 */
+body.light-applied:not(.has-user-bg) { background: #FFFFFF !important; color: #1C1C1E !important; }
+body.light-applied.has-user-bg { background-color: #FFFFFF !important; color: #1C1C1E !important; }
+body.light-applied .time { color: #1C1C1E !important; text-shadow: none !important; }
+body.light-applied .date { color: #8E8E93 !important; }
+body.light-applied .search-box { background: rgba(255,255,255,0.85) !important; color: #1C1C1E !important; border-color: #E5E5EA !important; }
+body.light-applied .search-box::placeholder { color: #8E8E93 !important; }
+body.light-applied .shortcut { background: rgba(255,255,255,0.85) !important; color: #1C1C1E !important; border-color: #E5E5EA !important; }
+body.light-applied .shortcut-name { color: #1C1C1E !important; }
+body.light-applied .add-btn { background: rgba(255,255,255,0.85) !important; color: #007AFF !important; border-color: #E5E5EA !important; }
+body.light-applied .add-icon { background: #F2F2F7 !important; color: #007AFF !important; }
+body.light-applied .modal-content { background: #FFFFFF !important; }
+body.light-applied .modal-title { color: #1C1C1E !important; }
+body.light-applied .modal-input { background: #F2F2F7 !important; color: #1C1C1E !important; border-color: #E5E5EA !important; }
+body.light-applied .bg-btn { color: #007AFF !important; }
+
+.time {
+    text-align: center;
+    font-size: 56px;
+    font-weight: 300;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+    text-shadow: 0 2px 10px rgba(255,255,255,0.35);
+    font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.date {
+    text-align: center;
+    font-size: 14px;
+    color: #8E8E93;
+    margin-bottom: 28px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+/* 自定义背景按钮 */
+.bg-btn {
+    display: block;
+    margin: 0 auto 20px auto;
+    font-size: 12px;
+    color: #007AFF;
+    background: transparent;
+    border: none;
+    padding: 4px 10px;
+    cursor: pointer;
+    text-align: center;
+    opacity: 0.85;
+}
+.bg-btn:active { opacity: 0.55; }
+
+.search-box {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto 28px auto;
+    height: 46px;
+    border-radius: 23px;
+    border: 1px solid rgba(209,209,214,0.6);
+    background: rgba(255,255,255,0.85);
+    color: #1C1C1E;
+    padding: 0 18px;
+    font-size: 15px;
+    outline: none;
+    -webkit-appearance: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+.search-box:focus {
+    border-color: #007AFF;
+    box-shadow: 0 2px 16px rgba(0, 122, 255, 0.18);
+}
+
+.shortcuts-wrap {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.shortcuts {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.shortcut {
+    background: rgba(255,255,255,0.85);
+    border: 1px solid rgba(229,229,234,0.6);
+    border-radius: 14px;
+    padding: 14px 4px 10px 4px;
+    text-align: center;
+    text-decoration: none;
+    color: #1C1C1E;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.1s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+.shortcut:active { transform: scale(0.95); }
+
+.shortcut-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #007AFF, #1E88E5);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.shortcut-name {
+    font-size: 11px;
+    color: #1C1C1E;
+    font-weight: 500;
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.add-btn {
+    background: rgba(255,255,255,0.85);
+    border: 1px solid rgba(229,229,234,0.6);
+    border-radius: 14px;
+    padding: 14px 4px 10px 4px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    cursor: pointer;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+.add-btn:active { transform: scale(0.95); }
+
+.add-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: #F2F2F7;
+    color: #007AFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 400;
+    margin-bottom: 6px;
+}
+
+.add-text {
+    font-size: 11px;
+    color: #8E8E93;
+}
+
+/* 弹窗 */
+.modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 20px;
+    width: 280px;
+    max-width: 90%;
+}
+
+@media (prefers-color-scheme: dark) {
+    .modal-content { background: #2D2D2D; }
+    .modal-title { color: #FFFFFF; }
+    .modal-input { background: #3A3A3A; color: #FFFFFF; border-color: #4A4A4A; }
+}
+
+.modal-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.modal-input {
+    width: 100%;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid #E5E5EA;
+    background: #F2F2F7;
+    padding: 0 12px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    outline: none;
+}
+.modal-input:focus { border-color: #007AFF; }
+
+.modal-btns {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.modal-btn {
+    flex: 1;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+.modal-btn-cancel { background: #F2F2F7; color: #8E8E93; }
+.modal-btn-save { background: #007AFF; color: #FFFFFF; }
+</style>
+</head>
+<body>
+
+<div class="time" id="time">00:00</div>
+<div class="date" id="date"></div>
+
+<input id="search" class="search-box" type="text" placeholder="搜索或输入网址..." />
+
+<div class="shortcuts-wrap">
+    <div class="shortcuts" id="shortcuts"></div>
+</div>
+
+<!-- 添加弹窗 -->
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <div class="modal-title">添加快捷方式</div>
+        <input class="modal-input" id="inputName" placeholder="名称" />
+        <input class="modal-input" id="inputUrl" placeholder="网址 (如 https://www.baidu.com)" />
+        <div class="modal-btns">
+            <button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button>
+            <button class="modal-btn modal-btn-save" onclick="saveShortcut()">保存</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function(){
+    // 应用深色模式覆盖（如果Java注入了__YULAN_DARK__）
+    if (typeof window.__YULAN_DARK__ !== 'undefined') {
+        if (window.__YULAN_DARK__ === true) {
+            document.body.classList.add('dark-applied');
+        } else {
+            document.body.classList.add('light-applied');
+        }
+    }
+
+    // ========== 自定义背景图片（从Android设置读取）==========
+    function applyBg(dataUrl) {
+        if (dataUrl) {
+            document.body.style.background = '#FFFFFF url("' + dataUrl + '") center/cover no-repeat fixed';
+            document.body.style.backgroundColor = '#FFFFFF';
+            document.body.classList.add('has-user-bg');
+        } else {
+            document.body.style.background = '';
+            document.body.style.backgroundColor = '#FFFFFF';
+            document.body.classList.remove('has-user-bg');
+        }
+    }
+
+    function loadBackground() {
+        var bgData = null;
+        try {
+            if (typeof YulanApp !== 'undefined' && YulanApp.getHomepageBg) {
+                bgData = YulanApp.getHomepageBg();
+            }
+        } catch(e) {}
+        if (!bgData) {
+            try {
+                bgData = localStorage.getItem('yulan_homepage_bg');
+            } catch(e) {}
+        }
+        if (bgData) applyBg(bgData);
+    }
+    loadBackground();
+
+    // ========== 时间显示 ==========
+    function updateTime() {
+        var now = new Date();
+        var h = now.getHours();
+        var m = now.getMinutes();
+        document.getElementById('time').textContent = (h < 10 ? '0' + h : h) + ':' + (m < 10 ? '0' + m : m);
+
+        var week = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+        var month = now.getMonth() + 1;
+        var day = now.getDate();
+        document.getElementById('date').textContent = month + '月' + day + '日 ' + week[now.getDay()];
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    // ========== 快捷方式管理 ==========
+    var SHORTCUTS_KEY = 'yulan_shortcuts';
+    var shortcuts = [];
+    try {
+        shortcuts = JSON.parse(localStorage.getItem(SHORTCUTS_KEY) || '[]');
+    } catch(e) { shortcuts = []; }
+
+    function render() {
+        var el = document.getElementById('shortcuts');
+        el.innerHTML = '';
+
+        for (var i = 0; i < shortcuts.length; i++) {
+            (function(s, idx){
+                var a = document.createElement('a');
+                a.className = 'shortcut';
+                a.href = s.url;
+                a.innerHTML = '<div class="shortcut-icon">' + (s.name.charAt(0) || 'S') + '</div>' +
+                              '<div class="shortcut-name">' + s.name + '</div>';
+                a.oncontextmenu = function(e) {
+                    e.preventDefault();
+                    if (confirm('删除 "' + s.name + '"？')) {
+                        shortcuts.splice(idx, 1);
+                        localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(shortcuts));
+                        render();
+                    }
+                };
+                el.appendChild(a);
+            })(shortcuts[i], i);
+        }
+
+        // 添加按钮
+        var add = document.createElement('div');
+        add.className = 'add-btn';
+        add.innerHTML = '<div class="add-icon">+</div><div class="add-text">添加</div>';
+        add.onclick = openModal;
+        el.appendChild(add);
+    }
+    render();
+
+    // 弹窗
+    function openModal() {
+        document.getElementById('modal').style.display = 'flex';
+        document.getElementById('inputName').value = '';
+        document.getElementById('inputUrl').value = '';
+        setTimeout(function(){ document.getElementById('inputName').focus(); }, 50);
+    }
+    window.openModal = openModal;
+
+    function closeModal() {
+        document.getElementById('modal').style.display = 'none';
+    }
+    window.closeModal = closeModal;
+
+    function saveShortcut() {
+        var name = (document.getElementById('inputName').value || '').trim();
+        var url = (document.getElementById('inputUrl').value || '').trim();
+        if (!name || !url) {
+            alert('请填写名称和网址');
+            return;
+        }
+        if (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) {
+            url = 'https://' + url;
+        }
+        shortcuts.push({ name: name, url: url });
+        localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(shortcuts));
+        closeModal();
+        render();
+    }
+    window.saveShortcut = saveShortcut;
+
+    // 搜索/导航 - 使用window.__YULAN_SEARCH__跟随系统设置（在每次使用时读取以确保是最新值）
+    var input = document.getElementById('search');
+    function go() {
+        var v = (input.value || '').trim();
+        if (!v) return;
+        var searchEngineUrl = window.__YULAN_SEARCH__ || 'https://www.bing.com/search?q=';
+        var url;
+        if (v.indexOf('http://') === 0 || v.indexOf('https://') === 0) {
+            url = v;
+        } else if (v.indexOf('.') !== -1 && v.indexOf(' ') === -1) {
+            url = 'https://' + v;
+        } else {
+            url = searchEngineUrl + encodeURIComponent(v);
+        }
+        // 通过Android接口加载URL，避免WebView内部跳转白屏
+        try {
+            if (typeof YulanApp !== 'undefined' && YulanApp.loadUrl) {
+                YulanApp.loadUrl(url);
+            } else {
+                location.href = url;
+            }
+        } catch(e) {
+            location.href = url;
+        }
+    }
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.keyCode === 13) go();
+    });
+
+    // 点击弹窗外部关闭
+    document.getElementById('modal').addEventListener('click', function(e) {
+        if (e.target.id === 'modal') closeModal();
+    });
+})();
+</script>
+</body>
+</html>
