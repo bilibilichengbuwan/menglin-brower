@@ -1,14 +1,18 @@
 #!/bin/bash
 set -e
 
-export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+# Java 路径：优先使用环境变量 JAVA_HOME，否则使用默认路径
+export JAVA_HOME=${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}
 export PATH=$JAVA_HOME/bin:$PATH
-export ANDROID_HOME=/workspace/android-sdk
+
+# Android SDK 路径：优先使用环境变量 ANDROID_HOME，否则使用默认路径
+export ANDROID_HOME=${ANDROID_HOME:-/workspace/android-sdk}
 export BUILD_TOOLS=$ANDROID_HOME/build-tools/35.0.0
 export PLATFORM=$ANDROID_HOME/platforms/android-34
 export PATH=$BUILD_TOOLS:$PATH
 
-PROJ=/workspace/menglin-browser
+# 项目路径：使用脚本所在目录
+PROJ=$(cd "$(dirname "$0")" && pwd)
 cd $PROJ
 
 rm -rf build
