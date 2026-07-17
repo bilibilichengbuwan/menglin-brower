@@ -10,20 +10,17 @@
 menglin-browser/
 ├── AndroidManifest.xml          # 应用配置
 ├── build.sh                     # 构建脚本
-├── assets/                      # 主页、启动页等静态资源
-│   ├── ai-assistant.html
+├── assets/                      # 主页、错误页等静态资源
 │   ├── error.html
 │   ├── homepage.html
-│   ├── snake.html
-│   └── splash.html
+│   └── snake.html
 ├── java/com/menglin/cn/         # Java 源码
 │   ├── MainActivity.java        # 浏览器主界面
 │   ├── SettingsActivity.java    # 设置页面
 │   ├── HistoryActivity.java     # 历史记录
 │   ├── DownloadActivity.java    # 下载列表
 │   ├── TabListActivity.java     # 标签页列表
-│   ├── TabManager.java          # 标签管理
-│   └── SplashActivity.java      # 启动页
+│   └── TabManager.java          # 标签管理
 ├── res/                         # 资源文件
 ├── gen_icon.py                  # 图标生成脚本
 ├── icon_source.jpg              # 图标源文件
